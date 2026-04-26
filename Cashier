@@ -1,0 +1,127 @@
+def NomNomNation():
+   
+    print("Welcome to FFF, the Finest Fast Food Joint")
+
+
+    import mysql.connector as sc
+
+
+    mycon = sc.connect(host="localhost", user="root", passwd="bvm",database="NomNomNation")
+ 
+    def FFF():
+      try:
+
+
+        bill=[]
+        price=[]
+        user={}
+        sgst=0
+        cgst=0
+        gt=0
+        from prettytable import PrettyTable
+        pt = PrettyTable()
+     
+        while True:
+          pt.clear_rows()
+          cur=mycon.cursor()
+          cur.execute('Select * from category;')
+          cdata=cur.fetchall()
+          print()
+          print("******** CATEGORY OF ITEMS **********")
+          sno=1
+          d={}
+         
+          for x in cdata:
+            d[sno]=[x[0],x[1]]
+            print(sno,  x[1], '(',x[0],')')
+            sno=sno+1
+
+
+          print('0 Exit....')
+          print("*************************************")
+          ch=int(input('Choose the Category option '))
+          print("*************************************")
+
+
+          if ch==0:
+            break
+
+
+          if ch not in d.keys():
+            print('Invalid choice.. ')
+
+
+          cat=d.get(ch)[0]
+          cname=d.get(ch)[1]
+         
+         
+          print()
+          print("************* Items Menu *************")
+         
+          print("Category :", cname, '\n')
+         
+          cur=mycon.cursor()
+
+
+          cur.execute('Select * from menu_data where category="{}";'.format(cat))
+
+
+          data=cur.fetchall()
+          pt.field_names = ["S.No", "Item", "Price"]
+         
+          for x in data:
+            pt.add_row([x[0],x[2],x[3]])
+           
+          while True :
+            print(pt)
+            bw2=int(input("Enter the S.No. of item required "))
+
+
+            for x in data:
+                if x[0]==bw2:
+                  bill.append(x[2])
+                  price.append(x[3])      
+            print("Would you like to order anything else from this Category?")
+            ask1=input("Please answer with either 'Yes' or 'No'")
+           
+            if ask1 in "YesyesYES":
+              continue
+            elif ask1 in "NonoNO":
+              break
+
+
+            #Bill is the name of the food item
+          user=dict(zip(bill,price))
+          print()
+           
+          cgst=(2.5/100)*sum(price)
+          sgst=(2.5/100)*sum(price)
+          gt=cgst+sgst+sum(price)
+     
+      except:
+        pass
+       
+      finally:
+         
+        if gt!=0:
+          from prettytable import PrettyTable
+          table = PrettyTable()
+          table.field_names = ["Item", "Price"]
+          for i in range(len(bill)):
+              table.add_row([bill[i], price[i]])
+          table.add_row(["--------", "--------"])
+          table.add_row(["Sub Total", sum(price)])
+          table.add_row(["CGST(@2.5%)", cgst])
+          table.add_row(["SGST(@2.5%)", sgst])
+          table.add_row(["--------", "--------"])
+          table.add_row(["Grand Total", gt])
+         
+          print(table)
+        print()
+        print("Thank you for choosing us, please come again!")
+        mycon.close()
+      return
+
+
+    FFF()
+
